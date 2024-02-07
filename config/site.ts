@@ -9,6 +9,6 @@ export const siteConfig = {
     },
   ],
   links: {
-    github: "https://github.com/AlexProgrammerDE/party-invite-tracker"
+    github: "https://github.com/AlexProgrammerDE/party-invite-tracker",
   },
 }

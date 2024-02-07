@@ -1,8 +1,4 @@
-import {
-  LucideProps,
-  Moon,
-  SunMedium,
-} from "lucide-react"
+import { LucideProps, Moon, SunMedium } from "lucide-react"
 
 export const Icons = {
   sun: SunMedium,

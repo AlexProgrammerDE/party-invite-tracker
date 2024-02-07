@@ -1,5 +1,6 @@
-import {Suspense} from "react";
-import MainForm from "@/components/main-form";
+import { Suspense } from "react"
+
+import MainForm from "@/components/main-form"
 
 export default function IndexPage() {
   return (
@@ -13,7 +14,7 @@ export default function IndexPage() {
         </p>
       </div>
       <Suspense>
-        <MainForm/>
+        <MainForm />
       </Suspense>
     </section>
   )
