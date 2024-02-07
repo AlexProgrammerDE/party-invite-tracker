@@ -332,7 +332,7 @@ function FriendsArray({
 
   return (
     <>
-      <div className="grid">
+      <div className="grid gap-4">
         {friendFields.map((item, friendIndex) => (
           <Card key={item.id}>
             <CardHeader className="gap-2">
