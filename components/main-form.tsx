@@ -1,26 +1,20 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
+import {useEffect, useState} from "react"
+import {zodResolver} from "@hookform/resolvers/zod"
+import {format} from "date-fns"
 import FileSaver from "file-saver"
-import { Controller, useFieldArray, useForm } from "react-hook-form"
-import { toast } from "sonner"
+import {Controller, useFieldArray, useForm} from "react-hook-form"
+import {toast} from "sonner"
 import * as z from "zod"
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
-import { Card, CardHeader } from "@/components/ui/card"
-import { Form } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import {cn} from "@/lib/utils"
+import {buttonVariants} from "@/components/ui/button"
+import {Card, CardHeader} from "@/components/ui/card"
+import {Form} from "@/components/ui/form"
+import {Input} from "@/components/ui/input"
+import {Label} from "@/components/ui/label"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select"
 
 export const possibleStates = z.enum(["PENDING", "PAID", "DELIVERED"])
 
@@ -69,11 +63,11 @@ export default function MainForm() {
   if (!formDataDefaults) {
     return null
   } else {
-    return <MainFormData formDataDefaults={formDataDefaults} />
+    return <MainFormData formDataDefaults={formDataDefaults}/>
   }
 }
 
-function MainFormData({ formDataDefaults }: { formDataDefaults: FormData }) {
+function MainFormData({formDataDefaults}: { formDataDefaults: FormData }) {
   const form = useForm<FormData>({
     resolver: zodResolver(dataSchema),
     defaultValues: formDataDefaults,
@@ -82,7 +76,7 @@ function MainFormData({ formDataDefaults }: { formDataDefaults: FormData }) {
   const {
     control,
     register,
-    formState: { errors },
+    formState: {errors},
     watch,
   } = form
 
@@ -179,8 +173,95 @@ function MainFormData({ formDataDefaults }: { formDataDefaults: FormData }) {
             reader.readAsText(file)
           }}
         />
+        <label
+          htmlFor="student-import"
+          className={cn("inline w-fit cursor-pointer", buttonVariants())}
+        >
+          Import students from list
+        </label>
+        <input
+          hidden
+          id="student-import"
+          type="file"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file === undefined) {
+              toast.error("No file selected")
+              return
+            }
+
+            const reader = new FileReader()
+            reader.onload = (e) => {
+              const contents = e.target?.result
+              if (typeof contents !== "string") {
+                toast.error("Failed to read file")
+                return
+              }
+
+              form.reset({
+                ...form.getValues(),
+                students: contents.split("\n")
+                  .filter(name => name)
+                  .map(name => name.trim())
+                  .map(name => {
+                  return {
+                    name,
+                    state: "PENDING",
+                    friends: [],
+                  }
+                })
+              })
+              toast.success(`Imported students from ${file.name}`)
+            }
+
+            reader.readAsText(file)
+          }}
+        />
+        <label
+          htmlFor="teachers-import"
+          className={cn("inline w-fit cursor-pointer", buttonVariants())}
+        >
+          Import teachers from list
+        </label>
+        <input
+          hidden
+          id="teachers-import"
+          type="file"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file === undefined) {
+              toast.error("No file selected")
+              return
+            }
+
+            const reader = new FileReader()
+            reader.onload = (e) => {
+              const contents = e.target?.result
+              if (typeof contents !== "string") {
+                toast.error("Failed to read file")
+                return
+              }
+
+              form.reset({
+                ...form.getValues(),
+                teachers: contents.split("\n")
+                  .filter(name => name)
+                  .map(name => name.trim())
+                  .map(name => {
+                    return {
+                      name,
+                      state: "PENDING",
+                    }
+                  })
+              })
+              toast.success(`Imported teachers from ${file.name}`)
+            }
+
+            reader.readAsText(file)
+          }}
+        />
       </div>
-      <AutoSave watch={watch} />
+      <AutoSave watch={watch}/>
       <form className="mx-1 flex flex-wrap gap-4">
         <div className="flex flex-col">
           <h2 className="mb-1 mt-2 text-xl font-bold">Students ({studentFields.length})</h2>
