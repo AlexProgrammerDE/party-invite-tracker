@@ -18,6 +18,7 @@ import {
 import {Form} from "@/components/ui/form";
 import {useEffect, useState} from "react";
 import {zodResolver} from "@hookform/resolvers/zod";
+import FileSaver from "file-saver";
 
 export const possibleStates = z.enum(["PENDING", "PAID", "DELIVERED"])
 
@@ -103,6 +104,40 @@ function MainFormData({ formDataDefaults }: { formDataDefaults: FormData }) {
 
   return (
     <Form {...form}>
+      <button
+        className={cn("w-fit", buttonVariants())}
+        type="button"
+        onClick={() => {
+          let csvData = "Name,State,Type\n";
+          const formValues = form.getValues()
+          formValues.students.forEach((student) => {
+            csvData += `${student.name},${student.state},Student\n`
+            student.friends.forEach((friend) => {
+              csvData += `${friend.name},${friend.state},Friend of ${student.name}\n`
+            })
+          })
+          formValues.teachers.forEach((teacher) => {
+            csvData += `${teacher.name},${teacher.state},Teacher\n`
+          })
+          const blob = new Blob([csvData], {type: "text/plain;charset=utf-8"});
+          FileSaver.saveAs(blob, `partyguests-${new Date().toDateString()}.csv`)
+        }}
+      >
+        Export as CSV
+      </button>
+
+      <button
+        className={cn("w-fit", buttonVariants())}
+        type="button"
+        onClick={() => {
+          const formValues = form.getValues()
+          const blob = new Blob([JSON.stringify(formValues, null, 2)],
+            {type: "application/json;charset=utf-8"});
+          FileSaver.saveAs(blob, `partyguests-${new Date().toDateString()}.json`)
+        }}
+      >
+        Export as JSON
+      </button>
       <AutoSave watch={watch}/>
       <form className="mx-1 grid">
         <h2 className="mb-1 mt-2 text-xl font-bold">Students</h2>
