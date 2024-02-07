@@ -11,6 +11,7 @@ import {cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {Loader2} from "lucide-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {toast} from "sonner";
 
 export const possibleStates = z.enum(["PENDING", "PAID", "DELIVERED"])
 
@@ -32,14 +33,38 @@ export const dataSchema = z.object({
 export type FormData = z.infer<typeof dataSchema>
 
 export default function MainForm() {
+  const [formDataDefaults, setFormDataDefaults] = useState<FormData | null>(null)
+
+  useEffect(() => {
+    if (window && window.localStorage) {
+      const data = window.localStorage.getItem("formData")
+      if (data) {
+        setFormDataDefaults(JSON.parse(data))
+      } else {
+        setFormDataDefaults({
+          students: [],
+          teachers: [],
+        })
+      }
+    }
+  }, [])
+
+  if (!formDataDefaults) {
+    return null
+  } else {
+    return <MainFormData formDataDefaults={formDataDefaults}/>
+  }
+}
+
+function MainFormData({formDataDefaults}: {formDataDefaults: FormData}) {
   const {
     control,
     register,
     handleSubmit,
-    formState: {errors, isDirty},
+    formState: {errors},
   } = useForm<FormData>({
     resolver: zodResolver(dataSchema),
-    defaultValues: {},
+    defaultValues: formDataDefaults,
   })
   const {fields: studentFields, append: studentAppend, remove: studentRemove} = useFieldArray({
     control,
@@ -54,11 +79,25 @@ export default function MainForm() {
   async function onSubmit(data: FormData) {
     setIsLoading(true)
     console.log(data)
+    const dataString = JSON.stringify(data)
+    if (window && window.localStorage) {
+      window.localStorage.setItem("formData", dataString)
+    } else {
+      console.error("localStorage not available")
+    }
+    toast.success("Saved")
     setIsLoading(false)
   }
 
   return (
     <form className="mx-1 grid" onSubmit={handleSubmit(onSubmit)}>
+      <button className={cn("w-fit", buttonVariants())} disabled={isLoading}>
+        {isLoading && (
+          <Loader2 className="mr-2 size-4 animate-spin"/>
+        )}
+        Save
+      </button>
+
       <h2 className="mb-1 mt-2 text-xl font-bold">
         Students
       </h2>
@@ -129,13 +168,7 @@ export default function MainForm() {
                     state: "PENDING",
                     friends: []
                   })}>
-            Add
-          </button>
-          <button className={cn("w-fit", buttonVariants())} disabled={isLoading}>
-            {isLoading && (
-              <Loader2 className="mr-2 size-4 animate-spin"/>
-            )}
-            Save
+            Add Student
           </button>
         </div>
       </div>
@@ -143,7 +176,7 @@ export default function MainForm() {
         Teachers
       </h2>
       <div className="grid gap-4">
-      <div className="grid w-fit gap-2">
+        <div className="grid w-fit gap-2">
           {teacherFields.map((item, index) => (
             <Card key={item.id}>
               <CardHeader className="gap-2">
@@ -208,13 +241,7 @@ export default function MainForm() {
                     name: "John Doe",
                     state: "PENDING",
                   })}>
-            Add
-          </button>
-          <button className={cn("w-fit", buttonVariants())} disabled={isLoading}>
-            {isLoading && (
-              <Loader2 className="mr-2 size-4 animate-spin"/>
-            )}
-            Save
+            Add Teacher
           </button>
         </div>
       </div>

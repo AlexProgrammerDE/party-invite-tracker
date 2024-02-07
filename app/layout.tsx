@@ -1,5 +1,5 @@
 import "@/styles/globals.css"
-import {Metadata, Viewport} from "next"
+import {type Metadata, type Viewport} from "next"
 
 import {siteConfig} from "@/config/site"
 import {fontSans} from "@/lib/fonts"
@@ -47,6 +47,7 @@ export default function RootLayout({children}: RootLayoutProps) {
         <SiteHeader/>
         <div className="flex-1">{children}</div>
       </div>
+      <Toaster richColors/>
       <TailwindIndicator/>
     </ThemeProvider>
     </body>
