@@ -181,171 +181,175 @@ function MainFormData({ formDataDefaults }: { formDataDefaults: FormData }) {
         />
       </div>
       <AutoSave watch={watch} />
-      <form className="mx-1 grid">
-        <h2 className="mb-1 mt-2 text-xl font-bold">Students</h2>
-        <div className="grid gap-4">
-          <div className="grid w-fit gap-2">
-            {studentFields.map((item, index) => (
-              <Card key={item.id}>
-                <CardHeader className="gap-2">
-                  <div>
-                    <Label htmlFor={`name-${item.id}`}>Student Name</Label>
-                    <Input
-                      id={`name-${item.id}`}
-                      placeholder="Name"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      autoComplete="false"
-                      type="text"
-                      disabled={isLoading}
-                      required
-                      {...register(`students.${index}.name`)}
-                    />
-                    {errors?.students?.[index]?.name && (
-                      <p className="px-1 text-xs text-red-600">
-                        {errors.students[index]?.name?.message}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor={`state-${item.id}`}>State</Label>
-                    <Controller
-                      control={control}
-                      name={`students.${index}.state`}
-                      render={({ field: { value, onChange } }) => (
-                        <Select
-                          disabled={isLoading}
-                          onValueChange={onChange}
-                          defaultValue={value}
-                        >
-                          <SelectTrigger id={`state-${item.id}`}>
-                            <SelectValue placeholder="Select a state" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="PENDING">PENDING</SelectItem>
-                            <SelectItem value="PAID">PAID</SelectItem>
-                            <SelectItem value="DELIVERED">DELIVERED</SelectItem>
-                          </SelectContent>
-                        </Select>
+      <form className="mx-1 flex flex-wrap gap-4">
+        <div className="flex flex-col">
+          <h2 className="mb-1 mt-2 text-xl font-bold">Students ({studentFields.length})</h2>
+          <div className="grid gap-4">
+            <div className="grid w-fit gap-2">
+              {studentFields.map((item, index) => (
+                <Card key={item.id}>
+                  <CardHeader className="gap-2">
+                    <div>
+                      <Label htmlFor={`name-${item.id}`}>Student Name</Label>
+                      <Input
+                        id={`name-${item.id}`}
+                        placeholder="Name"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        autoComplete="false"
+                        type="text"
+                        disabled={isLoading}
+                        required
+                        {...register(`students.${index}.name`)}
+                      />
+                      {errors?.students?.[index]?.name && (
+                        <p className="px-1 text-xs text-red-600">
+                          {errors.students[index]?.name?.message}
+                        </p>
                       )}
+                    </div>
+                    <div>
+                      <Label htmlFor={`state-${item.id}`}>State</Label>
+                      <Controller
+                        control={control}
+                        name={`students.${index}.state`}
+                        render={({field: {value, onChange}}) => (
+                          <Select
+                            disabled={isLoading}
+                            onValueChange={onChange}
+                            defaultValue={value}
+                          >
+                            <SelectTrigger id={`state-${item.id}`}>
+                              <SelectValue placeholder="Select a state"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="PENDING">PENDING</SelectItem>
+                              <SelectItem value="PAID">PAID</SelectItem>
+                              <SelectItem value="DELIVERED">DELIVERED</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors?.students?.[index]?.state && (
+                        <p className="px-1 text-xs text-red-600">
+                          {errors.students[index]?.state?.message}
+                        </p>
+                      )}
+                    </div>
+                    <FriendsArray
+                      control={control}
+                      index={index}
+                      register={register}
                     />
-                    {errors?.students?.[index]?.state && (
-                      <p className="px-1 text-xs text-red-600">
-                        {errors.students[index]?.state?.message}
-                      </p>
-                    )}
-                  </div>
-                  <FriendsArray
-                    control={control}
-                    index={index}
-                    register={register}
-                  />
-                  <button
-                    className={cn("w-fit", buttonVariants())}
-                    type="button"
-                    onClick={() => studentRemove(index)}
-                  >
-                    Remove
-                  </button>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-          <div className="flex flex-row gap-2">
-            <button
-              className={cn("w-fit", buttonVariants())}
-              type="button"
-              onClick={() =>
-                studentAppend({
-                  name: "John Doe",
-                  state: "PENDING",
-                  friends: [],
-                })
-              }
-            >
-              Add Student
-            </button>
+                    <button
+                      className={cn("w-fit", buttonVariants())}
+                      type="button"
+                      onClick={() => studentRemove(index)}
+                    >
+                      Remove
+                    </button>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+            <div className="flex flex-row gap-2">
+              <button
+                className={cn("w-fit", buttonVariants())}
+                type="button"
+                onClick={() =>
+                  studentAppend({
+                    name: "John Doe",
+                    state: "PENDING",
+                    friends: [],
+                  })
+                }
+              >
+                Add Student
+              </button>
+            </div>
           </div>
         </div>
-        <h2 className="mb-1 mt-2 text-xl font-bold">Teachers</h2>
-        <div className="grid gap-4">
-          <div className="grid w-fit gap-2">
-            {teacherFields.map((item, index) => (
-              <Card key={item.id}>
-                <CardHeader className="gap-2">
-                  <div>
-                    <Label htmlFor={`teachers-name-${item.id}`}>
-                      Teacher Name
-                    </Label>
-                    <Input
-                      id={`teachers-name-${item.id}`}
-                      placeholder="Name"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      autoComplete="false"
-                      type="text"
-                      disabled={isLoading}
-                      required
-                      {...register(`teachers.${index}.name`)}
-                    />
-                    {errors?.teachers?.[index]?.name && (
-                      <p className="px-1 text-xs text-red-600">
-                        {errors.teachers[index]?.name?.message}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor={`teachers-state-${item.id}`}>State</Label>
-                    <Controller
-                      control={control}
-                      name={`teachers.${index}.state`}
-                      render={({ field: { value, onChange } }) => (
-                        <Select
-                          disabled={isLoading}
-                          onValueChange={onChange}
-                          defaultValue={value}
-                        >
-                          <SelectTrigger id={`teachers-state-${item.id}`}>
-                            <SelectValue placeholder="Select a state" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="PENDING">PENDING</SelectItem>
-                            <SelectItem value="PAID">PAID</SelectItem>
-                            <SelectItem value="DELIVERED">DELIVERED</SelectItem>
-                          </SelectContent>
-                        </Select>
+        <div className="flex flex-col">
+          <h2 className="mb-1 mt-2 text-xl font-bold">Teachers ({teacherFields.length})</h2>
+          <div className="grid gap-4">
+            <div className="grid w-fit gap-2">
+              {teacherFields.map((item, index) => (
+                <Card key={item.id}>
+                  <CardHeader className="gap-2">
+                    <div>
+                      <Label htmlFor={`teachers-name-${item.id}`}>
+                        Teacher Name
+                      </Label>
+                      <Input
+                        id={`teachers-name-${item.id}`}
+                        placeholder="Name"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        autoComplete="false"
+                        type="text"
+                        disabled={isLoading}
+                        required
+                        {...register(`teachers.${index}.name`)}
+                      />
+                      {errors?.teachers?.[index]?.name && (
+                        <p className="px-1 text-xs text-red-600">
+                          {errors.teachers[index]?.name?.message}
+                        </p>
                       )}
-                    />
-                    {errors?.teachers?.[index]?.state && (
-                      <p className="px-1 text-xs text-red-600">
-                        {errors.teachers[index]?.state?.message}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    className={cn("w-fit", buttonVariants())}
-                    type="button"
-                    onClick={() => teacherRemove(index)}
-                  >
-                    Remove
-                  </button>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-          <div className="flex flex-row gap-2">
-            <button
-              className={cn("w-fit", buttonVariants())}
-              type="button"
-              onClick={() =>
-                teacherAppend({
-                  name: "John Doe",
-                  state: "PENDING",
-                })
-              }
-            >
-              Add Teacher
-            </button>
+                    </div>
+                    <div>
+                      <Label htmlFor={`teachers-state-${item.id}`}>State</Label>
+                      <Controller
+                        control={control}
+                        name={`teachers.${index}.state`}
+                        render={({field: {value, onChange}}) => (
+                          <Select
+                            disabled={isLoading}
+                            onValueChange={onChange}
+                            defaultValue={value}
+                          >
+                            <SelectTrigger id={`teachers-state-${item.id}`}>
+                              <SelectValue placeholder="Select a state"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="PENDING">PENDING</SelectItem>
+                              <SelectItem value="PAID">PAID</SelectItem>
+                              <SelectItem value="DELIVERED">DELIVERED</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors?.teachers?.[index]?.state && (
+                        <p className="px-1 text-xs text-red-600">
+                          {errors.teachers[index]?.state?.message}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      className={cn("w-fit", buttonVariants())}
+                      type="button"
+                      onClick={() => teacherRemove(index)}
+                    >
+                      Remove
+                    </button>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+            <div className="flex flex-row gap-2">
+              <button
+                className={cn("w-fit", buttonVariants())}
+                type="button"
+                onClick={() =>
+                  teacherAppend({
+                    name: "John Doe",
+                    state: "PENDING",
+                  })
+                }
+              >
+                Add Teacher
+              </button>
+            </div>
           </div>
         </div>
       </form>
@@ -354,10 +358,10 @@ function MainFormData({ formDataDefaults }: { formDataDefaults: FormData }) {
 }
 
 function FriendsArray({
-  control,
-  index,
-  register,
-}: {
+                        control,
+                        index,
+                        register,
+                      }: {
   control: any
   index: number
   register: any
@@ -373,6 +377,7 @@ function FriendsArray({
 
   return (
     <>
+      <h2 className="mt-2 text-md font-bold">Friends ({friendFields.length})</h2>
       <div className="grid gap-4">
         {friendFields.map((item, friendIndex) => (
           <Card key={item.id}>
@@ -395,10 +400,10 @@ function FriendsArray({
                 <Controller
                   control={control}
                   name={`students.${index}.friends.${friendIndex}.state`}
-                  render={({ field: { value, onChange } }) => (
+                  render={({field: {value, onChange}}) => (
                     <Select onValueChange={onChange} defaultValue={value}>
                       <SelectTrigger id={`friend-state-${item.id}`}>
-                        <SelectValue placeholder="Select a state" />
+                        <SelectValue placeholder="Select a state"/>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="PENDING">PENDING</SelectItem>
@@ -437,10 +442,10 @@ function FriendsArray({
 }
 
 function AutoSave({
-  watch,
-  exclude = [],
-  timeout,
-}: {
+                    watch,
+                    exclude = [],
+                    timeout,
+                  }: {
   watch: (names?: string | string[]) => any
   exclude?: string[]
   timeout?: number
@@ -450,8 +455,8 @@ function AutoSave({
   useEffect(() => {
     const values = exclude.length
       ? Object.entries(watchedValues)
-          .filter(([key]) => !exclude.includes(key))
-          .reduce((obj, [key, val]) => Object.assign(obj, { [key]: val }), {})
+        .filter(([key]) => !exclude.includes(key))
+        .reduce((obj, [key, val]) => Object.assign(obj, {[key]: val}), {})
       : Object.assign({}, watchedValues)
 
     if (Object.entries(values).length) {
