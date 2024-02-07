@@ -1,5 +1,6 @@
-import MainForm from "@/components/main-form";
-import {Suspense} from "react";
+import { Suspense } from "react"
+
+import MainForm from "@/components/main-form"
 
 export default function IndexPage() {
   return (

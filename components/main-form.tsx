@@ -1,11 +1,17 @@
 "use client"
 
-import {Controller, useFieldArray, useForm} from "react-hook-form"
+import { useEffect, useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { format } from "date-fns"
+import FileSaver from "file-saver"
+import { Controller, useFieldArray, useForm } from "react-hook-form"
+import { toast } from "sonner"
 import * as z from "zod"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardHeader } from "@/components/ui/card"
+import { Form } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -15,10 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {Form} from "@/components/ui/form";
-import {useEffect, useState} from "react";
-import {zodResolver} from "@hookform/resolvers/zod";
-import FileSaver from "file-saver";
 
 export const possibleStates = z.enum(["PENDING", "PAID", "DELIVERED"])
 
@@ -104,41 +106,81 @@ function MainFormData({ formDataDefaults }: { formDataDefaults: FormData }) {
 
   return (
     <Form {...form}>
-      <button
-        className={cn("w-fit", buttonVariants())}
-        type="button"
-        onClick={() => {
-          let csvData = "Name,State,Type\n";
-          const formValues = form.getValues()
-          formValues.students.forEach((student) => {
-            csvData += `${student.name},${student.state},Student\n`
-            student.friends.forEach((friend) => {
-              csvData += `${friend.name},${friend.state},Friend of ${student.name}\n`
+      <div className="flex flex-wrap gap-2">
+        <button
+          className={cn("inline w-fit", buttonVariants())}
+          type="button"
+          onClick={() => {
+            let csvData = "Name,State,Type\n"
+            const formValues = form.getValues()
+            formValues.students.forEach((student) => {
+              csvData += `${student.name},${student.state},Student\n`
+              student.friends.forEach((friend) => {
+                csvData += `${friend.name},${friend.state},Friend of ${student.name}\n`
+              })
             })
-          })
-          formValues.teachers.forEach((teacher) => {
-            csvData += `${teacher.name},${teacher.state},Teacher\n`
-          })
-          const blob = new Blob([csvData], {type: "text/plain;charset=utf-8"});
-          FileSaver.saveAs(blob, `partyguests-${new Date().toDateString()}.csv`)
-        }}
-      >
-        Export as CSV
-      </button>
+            formValues.teachers.forEach((teacher) => {
+              csvData += `${teacher.name},${teacher.state},Teacher\n`
+            })
+            const blob = new Blob([csvData], {
+              type: "text/plain;charset=utf-8",
+            })
+            const fileName = `partyguests-${formatFileDate(new Date())}.csv`
+            FileSaver.saveAs(blob, fileName)
+            toast.success(`Exported as ${fileName}`)
+          }}
+        >
+          Export as CSV
+        </button>
+        <button
+          className={cn("inline w-fit", buttonVariants())}
+          type="button"
+          onClick={() => {
+            const formValues = form.getValues()
+            const blob = new Blob([JSON.stringify(formValues, null, 2)], {
+              type: "application/json;charset=utf-8",
+            })
+            const fileName = `partyguests-${formatFileDate(new Date())}.json`
+            FileSaver.saveAs(blob, fileName)
+            toast.success(`Exported as ${fileName}`)
+          }}
+        >
+          Export as JSON
+        </button>
+        <label
+          htmlFor="json-import"
+          className={cn("inline w-fit cursor-pointer", buttonVariants())}
+        >
+          Import from JSON
+        </label>
+        <input
+          hidden
+          id="json-import"
+          type="file"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file === undefined) {
+              toast.error("No file selected")
+              return
+            }
 
-      <button
-        className={cn("w-fit", buttonVariants())}
-        type="button"
-        onClick={() => {
-          const formValues = form.getValues()
-          const blob = new Blob([JSON.stringify(formValues, null, 2)],
-            {type: "application/json;charset=utf-8"});
-          FileSaver.saveAs(blob, `partyguests-${new Date().toDateString()}.json`)
-        }}
-      >
-        Export as JSON
-      </button>
-      <AutoSave watch={watch}/>
+            const reader = new FileReader()
+            reader.onload = (e) => {
+              const contents = e.target?.result
+              if (typeof contents !== "string") {
+                toast.error("Failed to read file")
+                return
+              }
+
+              form.reset(JSON.parse(contents))
+              toast.success(`Imported from ${file.name}`)
+            }
+
+            reader.readAsText(file)
+          }}
+        />
+      </div>
+      <AutoSave watch={watch} />
       <form className="mx-1 grid">
         <h2 className="mb-1 mt-2 text-xl font-bold">Students</h2>
         <div className="grid gap-4">
@@ -170,14 +212,14 @@ function MainFormData({ formDataDefaults }: { formDataDefaults: FormData }) {
                     <Controller
                       control={control}
                       name={`students.${index}.state`}
-                      render={({field: {value, onChange}}) => (
+                      render={({ field: { value, onChange } }) => (
                         <Select
                           disabled={isLoading}
                           onValueChange={onChange}
                           defaultValue={value}
                         >
                           <SelectTrigger id={`state-${item.id}`}>
-                            <SelectValue placeholder="Select a state"/>
+                            <SelectValue placeholder="Select a state" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="PENDING">PENDING</SelectItem>
@@ -257,14 +299,14 @@ function MainFormData({ formDataDefaults }: { formDataDefaults: FormData }) {
                     <Controller
                       control={control}
                       name={`teachers.${index}.state`}
-                      render={({field: {value, onChange}}) => (
+                      render={({ field: { value, onChange } }) => (
                         <Select
                           disabled={isLoading}
                           onValueChange={onChange}
                           defaultValue={value}
                         >
                           <SelectTrigger id={`teachers-state-${item.id}`}>
-                            <SelectValue placeholder="Select a state"/>
+                            <SelectValue placeholder="Select a state" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="PENDING">PENDING</SelectItem>
@@ -308,15 +350,14 @@ function MainFormData({ formDataDefaults }: { formDataDefaults: FormData }) {
         </div>
       </form>
     </Form>
-
   )
 }
 
 function FriendsArray({
-                        control,
-                        index,
-                        register,
-                      }: {
+  control,
+  index,
+  register,
+}: {
   control: any
   index: number
   register: any
@@ -354,10 +395,10 @@ function FriendsArray({
                 <Controller
                   control={control}
                   name={`students.${index}.friends.${friendIndex}.state`}
-                  render={({field: {value, onChange}}) => (
+                  render={({ field: { value, onChange } }) => (
                     <Select onValueChange={onChange} defaultValue={value}>
                       <SelectTrigger id={`friend-state-${item.id}`}>
-                        <SelectValue placeholder="Select a state"/>
+                        <SelectValue placeholder="Select a state" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="PENDING">PENDING</SelectItem>
@@ -396,21 +437,21 @@ function FriendsArray({
 }
 
 function AutoSave({
-                    watch,
-                    exclude = [],
-                    timeout
-                  }: {
-  watch: (names?: string | string[]) => any;
-  exclude?: string[];
-  timeout?: number;
+  watch,
+  exclude = [],
+  timeout,
+}: {
+  watch: (names?: string | string[]) => any
+  exclude?: string[]
+  timeout?: number
 }) {
   const watchedValues = watch()
 
   useEffect(() => {
     const values = exclude.length
       ? Object.entries(watchedValues)
-        .filter(([key]) => !exclude.includes(key))
-        .reduce((obj, [key, val]) => Object.assign(obj, { [key]: val }), {})
+          .filter(([key]) => !exclude.includes(key))
+          .reduce((obj, [key, val]) => Object.assign(obj, { [key]: val }), {})
       : Object.assign({}, watchedValues)
 
     if (Object.entries(values).length) {
@@ -422,4 +463,8 @@ function AutoSave({
   }, [watchedValues, timeout])
 
   return null
+}
+
+function formatFileDate(date: Date): string {
+  return format(date, "yyyy-MM-dd HH:mm:ss")
 }
